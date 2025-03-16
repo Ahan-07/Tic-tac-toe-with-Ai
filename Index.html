@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tic Tac Toe</title>
+    <!-- Bootstrap CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Material UI Icons -->
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    <style>
+        body {
+            display: grid;
+            font-family: Arial, sans-serif;
+            background-image: url(lp.jpg);
+            /* background-repeat: no-repeat;
+            background-position: center; */
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+            background-color: #d1fbeb;
+            justify-content: center;
+            align-items: center;
+        }
+
+        #settings {
+            background-color: #E3DAFF;
+            padding: 5vmin;
+            border-radius: 15px;
+        }
+
+        #game-board {
+            display: none;
+            width: 60svh;
+            padding: 5vmin;
+            /* background-color: antiquewhite; */
+            border: 2px solid white;
+            backdrop-filter: blur(40px);
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+        }
+
+        .box {
+            width: 100px;
+            height: 100px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            font-weight: bold;
+            cursor: pointer;
+            border: 1px solid #ddd;
+        }
+
+        .board {
+            display: grid;
+            border: 2px solid black;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 5px;
+        }
+
+        #win {
+            display: none;
+            margin-top: 20px;
+            font-size: 1.5rem;
+            color: #28a745;
+        }
+
+        .cotton-candy {
+            background: linear-gradient(to right, #ffafbd, #ffc3a0);
+        }
+
+        .night {
+            background-image: url(bg\ \(1\).jpg);
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+        }
+
+        .green {
+            background-image: url(bg\ \(2\).jpg);
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+        }
+
+        .desert {
+            background-image: url(bg\ \(3\).jpg);
+            -webkit-background-size: cover;
+            -moz-background-size: cover;
+            -o-background-size: cover;
+            background-size: cover;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container mt-5">
+        <!-- Start Game Screen -->
+        <div id="start-screen" class="text-center">
+            <h1>Tic Tac Toe</h1>
+            <button id="start-game" class="btn btn-primary">Start Game</button>
+        </div>
+
+        <!-- Game Settings -->
+        <div id="settings" class="mt-4" style="display: none;">
+            <h3>Game Settings</h3>
+            <div class="mb-3">
+                <label for="theme" class="form-label">Choose Theme:</label>
+                <select id="theme" class="form-select">
+                    <option value="default">Default</option>
+                    <option value="cotton-candy">Cotton Candy</option>
+                    <option value="night">Night-Crawler</option>
+                    <option value="green">EverGreen</option>
+                    <option value="desert">Bloody Desert</option>
+                </select>
+                <!-- game mode -->
+                <div class="mb-3">
+                    <label for="game-mode" class="form-label">Choose Game Mode:</label>
+                    <select id="game-mode" class="form-select">
+                        <option value="player-vs-player">Player vs Player</option>
+                        <option value="player-vs-computer">Player vs Computer</option>
+                    </select>
+                </div>
+
+            </div>
+            <div class="mb-3">
+                <label for="board-color" class="form-label">Choose Board Color:</label>
+                <input type="color" id="board-color" class="form-control" value="#ffffff">
+            </div>
+            <button id="apply-settings" class="btn btn-success">Apply Settings</button>
+        </div>
+
+        <!-- Game Board -->
+        <div id="game-board" class="mt-5">
+            <div class="board" id="board"></div>
+            <div id="win" class="text-center"></div>
+            <button id="new-game" class="btn btn-warning mt-3">New Game</button>
+            <button id="reset-game" class="btn btn-danger mt-3">Reset Game</button>
+        </div>
+    </div>
+
+    <!-- Bootstrap JS -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const startScreen = document.getElementById("start-screen");
+        const settings = document.getElementById("settings");
+        const gameBoard = document.getElementById("game-board");
+        const board = document.getElementById("board");
+        // const player1Input = document.getElementById("player1");
+        // const player2Input = document.getElementById("player2");
+        const themeSelect = document.getElementById("theme");
+        const boardColorPicker = document.getElementById("board-color");
+        const winMessage = document.getElementById("win");
+
+        let playerO = true;
+        const arr = [
+            [0, 1, 2],
+            [3, 4, 5],
+            [6, 7, 8],
+            [0, 3, 6],
+            [1, 4, 7],
+            [2, 5, 8],
+            [0, 4, 8],
+            [2, 4, 6]
+        ];
+        // Game mode
+        const gameMode = document.getElementById("game-mode");
+        let isVsComputer = false;
+
+        document.getElementById("apply-settings").addEventListener("click", () => {
+            isVsComputer = gameMode.value === "player-vs-computer";
+            settings.style.display = "none";
+            gameBoard.style.display = "flex";
+            createBoard();
+        });
+
+        // create board div 
+        function createBoard() {
+            board.innerHTML = "";
+            for (let i = 0; i < 9; i++) {
+                const box = document.createElement("div");
+                box.classList.add("box");
+                box.style.border="2px solid black";
+                board.appendChild(box);
+                box.addEventListener("click", handleClick);
+            }
+        }
+        // handle click function and decide turn
+        function handleClick(e) {
+            const box = e.target;
+            if (box.innerText === "") {
+                box.innerText = playerO ? "O" : "X";
+
+                if (checkWinner()) return;
+
+                playerO = !playerO;
+
+                if (isVsComputer && !playerO) {
+                    setTimeout(computerMove, 150); // Add delay for realistic effect
+                }
+            }
+        }
+
+
+        // computer move function
+        function computerMove() {
+            const boxes = document.querySelectorAll(".box");
+            const emptyBoxes = [...boxes].filter(box => box.innerText === "");
+
+            // Try to win or block first
+            for (let p of arr) {
+                const [a, b, c] = p;
+                const values = [boxes[a].innerText, boxes[b].innerText, boxes[c].innerText];
+
+                // Check if AI can win
+                if (values.filter(v => v === "X").length === 2 && values.includes("")) {
+                    boxes[p[values.indexOf("")]].innerText = "X";
+                    if (checkWinner()) return;
+                    playerO = true;
+                    return;
+                }
+
+                // Check if AI can block player
+                if (values.filter(v => v === "O").length === 2 && values.includes("")) {
+                    boxes[p[values.indexOf("")]].innerText = "X";
+                    if (checkWinner()) return;
+                    playerO = true;
+                    return;
+                }
+            }
+
+            // Fallback: Random move
+            if (emptyBoxes.length > 0) {
+                const randomIndex = Math.floor(Math.random() * emptyBoxes.length);
+                emptyBoxes[randomIndex].innerText = "X";
+                if (checkWinner()) return;
+                playerO = true;
+            }
+        }
+
+        // check winner
+        function checkWinner() {
+            const boxes = document.querySelectorAll(".box");
+            for (let p of arr) {
+                const [a, b, c] = p;
+                if (boxes[a].innerText && boxes[a].innerText === boxes[b].innerText && boxes[b].innerText === boxes[c].innerText) {
+                    showWinner(boxes[a].innerText);
+                    return;
+                }
+            }
+            if ([...boxes].every(box => box.innerText !== "")) {
+                showWinner("No one");
+            }
+        }
+
+        function showWinner(winner) {
+            winMessage.style.display = "block";
+            winMessage.innerText = winner === "No one" ? "It's a draw!" : `Winner is player ${winner}`;
+            document.querySelectorAll(".box").forEach(box => box.removeEventListener("click", handleClick));
+        }
+
+        function resetGame() {
+            playerO = true;
+            createBoard();
+            winMessage.style.display = "none";
+        }
+
+        document.getElementById("start-game").addEventListener("click", () => {
+            startScreen.style.display = "none";
+            settings.style.display = "block";
+        });
+
+        document.getElementById("apply-settings").addEventListener("click", () => {
+            settings.style.display = "none";
+            gameBoard.style.display = "flex";
+            createBoard();
+
+            // Apply Theme
+            const theme = themeSelect.value;
+            if (theme === "cotton-candy") {
+                document.body.classList.add("cotton-candy");
+            }
+            else if (theme === "night") {
+                document.body.classList.add("night");
+            }
+            else if (theme === "green") {
+                document.body.classList.add("green");
+            }
+            else if (theme === "desert") {
+                document.body.classList.add("desert");
+            }
+            else {
+                document.body.classList.remove("cotton-candy");
+            }
+
+            // Apply Board Color
+            board.style.backgroundColor = boardColorPicker.value;
+        });
+
+        document.getElementById("new-game").addEventListener("click", resetGame);
+        document.getElementById("reset-game").addEventListener("click", () => {
+            // player1Input.value = "";
+            // player2Input.value = "";
+            themeSelect.value = "default";
+            boardColorPicker.value = "#ffffff";
+            document.body.classList.remove("cotton-candy");
+            settings.style.display = "block";
+            gameBoard.style.display = "none";
+        });
+    </script>
+</body>
+
+</html>
